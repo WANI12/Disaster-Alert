@@ -223,3 +223,43 @@ Project Lead: Wani Geoffrey
 Email: wanigeoffrey1@gmail.com
 
 Location: Juba, South Sudan
+
+## Backend (Python + Django + MySQL)
+
+The repository now includes a Django backend in `backend/` with:
+
+- **REST API**: Locations, Alerts, Reports
+- **Realtime stream**: Server-Sent Events endpoint for live alerts
+- **Analytics**: Simple aggregated summaries for dashboards
+- **Database**: MySQL (recommended) with a SQLite dev fallback
+
+### Quick start (SQLite dev mode)
+
+```bash
+cd backend
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt
+copy .env.example .env
+set DB_ENGINE=sqlite
+.\.venv\Scripts\python manage.py migrate
+.\.venv\Scripts\python manage.py runserver
+```
+
+### MySQL with Docker (recommended for production-like dev)
+
+```bash
+cd backend
+docker compose up -d
+copy .env.example .env
+set DB_ENGINE=mysql
+.\.venv\Scripts\python manage.py migrate
+.\.venv\Scripts\python manage.py runserver
+```
+
+### API endpoints
+
+- **Locations**: `GET/POST /api/locations/`
+- **Alerts**: `GET/POST /api/alerts/`, `GET/PATCH /api/alerts/{id}/`
+- **Live alerts (SSE)**: `GET /api/alerts/stream/?since=2026-01-01T00:00:00Z`
+- **Reports**: `GET/POST /api/reports/`
+- **Analytics summary**: `GET /api/analytics/summary/?days=30`
