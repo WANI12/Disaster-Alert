@@ -385,6 +385,7 @@ class EarlyWarningAnalyticsView(APIView):
         for row in grouped:
             count_recent = int(row["count_recent"])
             risk_score = int(row["risk_score"] or 0)
+            max_sev = int(row["max_severity"] or 0)
             triggered = (
                 (mode == "risk_score" and risk_score >= threshold_risk_score_i)
                 or (mode != "risk_score" and count_recent >= threshold_count_i)
@@ -394,6 +395,19 @@ class EarlyWarningAnalyticsView(APIView):
 
             lat = row["location__latitude"]
             lon = row["location__longitude"]
+
+            # Keep risk heuristic consistent with `MapAnalyticsView`.
+            if max_sev >= 5:
+                risk_level = "catastrophic"
+            elif max_sev >= 4:
+                risk_level = "extreme"
+            elif max_sev >= 3:
+                risk_level = "high"
+            elif max_sev >= 2:
+                risk_level = "moderate"
+            else:
+                risk_level = "low"
+
             warnings.append(
                 {
                     "location_id": row["location_id"],
@@ -401,7 +415,8 @@ class EarlyWarningAnalyticsView(APIView):
                     "state": row["location__state"],
                     "count_recent": count_recent,
                     "risk_score": risk_score,
-                    "max_severity": row["max_severity"],
+                    "max_severity": max_sev,
+                    "risk_level": risk_level,
                     "latest_occurrence": row["latest_occurrence"].isoformat() if row["latest_occurrence"] else None,
                     "coordinates": [float(lon), float(lat)],
                 }

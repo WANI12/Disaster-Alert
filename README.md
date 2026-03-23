@@ -263,3 +263,23 @@ set DB_ENGINE=mysql
 - **Live alerts (SSE)**: `GET /api/alerts/stream/?since=2026-01-01T00:00:00Z`
 - **Reports**: `GET/POST /api/reports/`
 - **Analytics summary**: `GET /api/analytics/summary/?days=30`
+- **Analytics (timeline)**: `GET /api/analytics/timeline/`
+- **Analytics (map)**: `GET /api/analytics/map/`
+- **Early warning**: `GET /api/analytics/early-warning/`
+
+## Frontend (React + Vite)
+
+The repository includes a modern frontend under `frontend/` with:
+- User registration/login
+- Incident data collection forms
+- Dashboard with map + timeline + early warnings (filtered from early 2000 to today)
+
+### Quick start
+```bash
+cd frontend
+npm install
+copy .env.example .env
+npm run dev
+```
+
+Default UI address: `http://localhost:5173`
