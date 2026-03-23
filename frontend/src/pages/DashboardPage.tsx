@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import FilterBar from "../ui/FilterBar";
+import FilterBar from "../ui";
 import { apiFetch } from "../api/client";
 import { GeoJSONFeatureCollection, TimelinePayload } from "../ui/types";
 
