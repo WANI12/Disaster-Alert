@@ -1,10 +1,10 @@
 import React from "react";
 import { Link, NavLink, Route, Routes } from "react-router-dom";
-import DashboardPage from "./pages/DashboardPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import SubmitAlertPage from "./pages/SubmitAlertPage";
-import SubmitReportPage from "./pages/SubmitReportPage";
+import DashboardPage from "./pages/DashboardPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import RegisterPage from "./pages/RegisterPage.tsx";
+import SubmitAlertPage from "./pages/SubmitAlertPage.tsx";
+import SubmitReportPage from "./pages/SubmitReportPage.tsx";
 
 export default function App() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
