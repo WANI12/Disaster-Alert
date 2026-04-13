@@ -1,0 +1,21 @@
+{
+  "name": "disaster-alert",
+  "version": "1.0.0",
+  "description": "Disaster Alert - Real-Time Disaster Monitoring System",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python manage.py runserver",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
+    "build:frontend": "cd frontend && npm run build",
+    "migrate": "cd backend && python manage.py migrate",
+    "makemigrations": "cd backend && python manage.py makemigrations",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["disaster", "monitoring", "alert", "react", "django"],
+  "author": "",
+  "license": "MIT"
+}
