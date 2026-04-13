@@ -123,27 +123,45 @@ Scalable and secure
 ⚙️ Installation
 Prerequisites
 
-Node.js / Python
-
-Database (PostgreSQL recommended)
-
+Node.js (v18+)
+Python (3.11+)
 Git
 
-Steps
+Quick Start (Development)
 # Clone the repository
 git clone https://github.com/your-username/disaster-alert.git
-
-# Navigate into the project
 cd disaster-alert
 
-# Install dependencies
+# Install all dependencies
+npm run install:all
+
+# Run database migrations
+npm run migrate
+
+# Start both frontend and backend
+npm run dev
+
+# Or use the convenience script:
+# Windows: double-click start-dev.bat
+# Linux/Mac: chmod +x start-dev.sh && ./start-dev.sh
+
+# Frontend will be available at http://localhost:5173
+# Backend API will be available at http://localhost:8000
+
+Manual Setup
+# Backend setup
+cd backend
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+
+# Frontend setup (in new terminal)
+cd frontend
 npm install
+npm run dev
 
-# Setup environment variables
-cp .env.example .env
-
-# Run the application
-npm start
+Environment Configuration
+The backend uses SQLite by default for development. The database file (db.sqlite3) is automatically created in the backend directory.
 🔐 User Roles
 
 Admin
