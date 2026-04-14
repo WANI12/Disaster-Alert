@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import FilterBar from "../ui";
 import { apiFetch } from "../api/client";
-import { GeoJSONFeatureCollection, TimelinePayload } from "../ui/types";
+import { ClimatePayload, GeoJSONFeatureCollection, TimelinePayload } from "../ui/types";
 
 const DEFAULT_FROM = "2000-01-01";
 
@@ -43,9 +43,11 @@ export default function DashboardPage() {
 
   const [timeline, setTimeline] = useState<TimelinePayload | null>(null);
   const [mapData, setMapData] = useState<GeoJSONFeatureCollection | null>(null);
+  const [climateData, setClimateData] = useState<ClimatePayload | null>(null);
   const [earlyWarning, setEarlyWarning] = useState<GeoJSONFeatureCollection | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSatellite, setShowSatellite] = useState(true);
 
   const query = useMemo(() => {
     const params = new URLSearchParams();
@@ -65,9 +67,10 @@ export default function DashboardPage() {
       setBusy(true);
       setError(null);
       try {
-        const [t, m, e] = await Promise.all([
+        const [t, m, c, e] = await Promise.all([
           apiFetch<TimelinePayload>(`/analytics/timeline/?${query}`),
           apiFetch<GeoJSONFeatureCollection>(`/analytics/map/?${query}`),
+          apiFetch<ClimatePayload>(`/analytics/climate/?${query}`),
           apiFetch<GeoJSONFeatureCollection>(
             `/analytics/early-warning/?${query}&window_days=7&threshold_count=3&format=geojson`,
           ),
@@ -75,6 +78,7 @@ export default function DashboardPage() {
         if (!cancelled) {
           setTimeline(t);
           setMapData(m);
+          setClimateData(c);
           setEarlyWarning(e);
         }
       } catch (err) {
@@ -91,6 +95,12 @@ export default function DashboardPage() {
 
   const mapMarkers = mapData?.features ?? [];
   const warningMarkers = earlyWarning?.features ?? [];
+  const climateMarkers = climateData?.markers ?? [];
+  const satelliteTileUrl =
+    climateData?.satellite_tiles?.[0]?.url ||
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+  const satelliteAttribution =
+    climateData?.satellite_tiles?.[0]?.attribution || "&copy; ESRI World Imagery";
 
   const lineData = (timeline?.total_by_period ?? []).map((p) => ({
     x: p.period ?? "",
@@ -154,6 +164,58 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+          <h2 className="text-lg font-semibold text-white">South Sudan Climate (IGAD)</h2>
+          <p className="text-sm text-slate-400">
+            Climate indicators for South Sudan with IGAD monitoring and satellite-derived insights.
+          </p>
+
+          <div className="mt-4 text-sm text-slate-300">
+            {climateData ? climateData.summary : "Loading climate data..."}
+          </div>
+
+          <div className="mt-4 grid gap-3">
+            {(climateData?.indicators ?? []).map((indicator) => (
+              <div
+                key={indicator.name}
+                className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4"
+              >
+                <div className="text-sm text-slate-400">{indicator.name}</div>
+                <div className="mt-1 text-lg font-semibold text-white">
+                  {indicator.value} {indicator.unit}
+                </div>
+              </div>
+            ))}
+
+            {!climateData ? (
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 text-slate-400">
+                Climate indicator data is being fetched.
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-white">Map base layer</div>
+                <div className="text-xs text-slate-400">Toggle satellite/street imagery.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSatellite((current) => !current)}
+                className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-200 transition hover:border-slate-500 hover:bg-slate-700"
+              >
+                {showSatellite ? "Satellite" : "Street"}
+              </button>
+            </div>
+            <div className="mt-3 text-xs text-slate-400">
+              {showSatellite
+                ? "Satellite imagery from ESRI is displayed on the map."
+                : "Street basemap is shown for location context."}
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
           <h2 className="text-lg font-semibold text-white">Early Warnings (7 days)</h2>
           <p className="text-sm text-slate-400">Triggered by incident volume threshold.</p>
 
@@ -206,10 +268,14 @@ export default function DashboardPage() {
             zoom={6}
             style={{ height: "100%", width: "100%" }}
           >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
+            {showSatellite ? (
+              <TileLayer url={satelliteTileUrl} attribution={satelliteAttribution} />
+            ) : (
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; OpenStreetMap contributors'
+              />
+            )}
 
             {mapMarkers.map((f, idx) => {
               const coords = f.geometry?.coordinates as [number, number] | undefined;
@@ -238,6 +304,38 @@ export default function DashboardPage() {
                       <div>Incidents: {p?.count}</div>
                       <div>Max severity: {p?.max_severity}</div>
                       <div>Risk: {p?.risk_level}</div>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
+
+            {climateMarkers.map((f, idx) => {
+              const coords = f.geometry?.coordinates as [number, number] | undefined;
+              if (!coords) return null;
+              const lon = coords[0];
+              const lat = coords[1];
+              const p = f.properties as any;
+              const color = "#f59e0b";
+              return (
+                <CircleMarker
+                  key={`c-${idx}`}
+                  center={[lat, lon]}
+                  pathOptions={{
+                    color,
+                    fillColor: color,
+                    fillOpacity: 0.3,
+                    weight: 2,
+                  }}
+                  radius={10}
+                >
+                  <Popup>
+                    <div style={{ fontSize: 13 }}>
+                      <div className="font-semibold">{p?.name}</div>
+                      <div>{p?.indicator}</div>
+                      <div>
+                        {p?.value} {p?.trend}
+                      </div>
                     </div>
                   </Popup>
                 </CircleMarker>
