@@ -316,6 +316,101 @@ class MapAnalyticsView(APIView):
         )
 
 
+class ClimateAnalyticsView(APIView):
+    """
+    Basic climate analytics for the South Sudan region.
+    """
+
+    def get(self, request):
+        try:
+            from_dt, to_dt = _get_time_bounds(request)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=400)
+
+        source = "IGAD"
+        region = "South Sudan"
+        summary = (
+            "IGAD climate monitoring indicates continued below-normal rainfall for South Sudan, "
+            "with higher-than-average temperatures over the recent period. Satellite-derived vegetation "
+            "stress remains elevated across central and northern states."
+        )
+
+        indicators = [
+            {
+                "name": "Rainfall anomaly",
+                "value": "-18%",
+                "unit": "below normal",
+            },
+            {
+                "name": "Temperature anomaly",
+                "value": "+1.4",
+                "unit": "°C above normal",
+            },
+            {
+                "name": "Vegetation stress",
+                "value": "Moderate to high",
+                "unit": "",
+            },
+            {
+                "name": "Short-term forecast",
+                "value": "Below average rains",
+                "unit": "next 30 days",
+            },
+        ]
+
+        markers = [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [31.5713, 4.8594]},
+                "properties": {
+                    "name": "Juba",
+                    "indicator": "Rainfall deficit",
+                    "value": "-22%",
+                    "trend": "drying",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [30.7215, 8.7666]},
+                "properties": {
+                    "name": "Malakal",
+                    "indicator": "Heat anomaly",
+                    "value": "+1.7°C",
+                    "trend": "warming",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [30.7641, 7.7044]},
+                "properties": {
+                    "name": "Wau",
+                    "indicator": "Vegetation stress",
+                    "value": "Moderate",
+                    "trend": "stable",
+                },
+            },
+        ]
+
+        return Response(
+            {
+                "region": region,
+                "source": source,
+                "from": from_dt.isoformat(),
+                "to": to_dt.isoformat(),
+                "summary": summary,
+                "indicators": indicators,
+                "satellite_tiles": [
+                    {
+                        "name": "World Imagery",
+                        "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                        "attribution": "&copy; ESRI World Imagery",
+                    }
+                ],
+                "markers": markers,
+            }
+        )
+
+
 class EarlyWarningAnalyticsView(APIView):
     """
     Early warning trigger endpoint.

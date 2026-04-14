@@ -26,3 +26,28 @@ export type TimelinePayload = {
   by_type?: Record<string, Array<{ period: string | null; count: number }>>;
 };
 
+export type ClimateIndicator = {
+  name: string;
+  value: string;
+  unit: string;
+};
+
+export type ClimatePayload = {
+  region: string;
+  source: string;
+  from: string;
+  to: string;
+  summary: string;
+  indicators: ClimateIndicator[];
+  satellite_tiles: Array<{
+    name: string;
+    url: string;
+    attribution: string;
+  }>;
+  markers: Array<{
+    type: "Feature";
+    geometry: { type: "Point"; coordinates: [number, number] };
+    properties: Record<string, unknown>;
+  }>;
+};
+
