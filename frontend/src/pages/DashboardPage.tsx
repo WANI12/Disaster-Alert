@@ -344,6 +344,7 @@ export default function DashboardPage() {
                           drought: ["drought"],
                           agriculture: ["crop", "agriculture"],
                           "heat-stress": ["heat", "heatstress"],
+                          conflict: ["conflict"],
                         };
                         const allowedTypes = filterMap[selectedFilter] || [];
                         if (
@@ -354,7 +355,7 @@ export default function DashboardPage() {
                       }
 
                       const color = riskColor(p?.risk_level);
-                      const weight = Math.min(12, 3 + Number(p?.count ?? 1));
+                      const weight = Math.min(16, 5 + Number(p?.count ?? 1));
                       return (
                         <CircleMarker
                           key={`m-${idx}`}
@@ -362,8 +363,8 @@ export default function DashboardPage() {
                           pathOptions={{
                             color,
                             fillColor: color,
-                            fillOpacity: 0.25,
-                            weight: 2,
+                            fillOpacity: 0.35,
+                            weight: 3,
                           }}
                           radius={weight}
                         >
@@ -381,6 +382,11 @@ export default function DashboardPage() {
                               {p?.heat_index && (
                                 <div className="text-xs text-gray-600">
                                   Heat Index: {p.heat_index}°C
+                                </div>
+                              )}
+                              {p?.count && (
+                                <div className="text-xs text-gray-600">
+                                  Reports: {p.count}
                                 </div>
                               )}
                             </div>

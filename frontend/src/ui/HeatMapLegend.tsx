@@ -1,5 +1,5 @@
 import React from "react";
-import { Cloud, Droplets, Leaf, Flame } from "lucide-react";
+import { Cloud, Droplets, Leaf, Flame, Swords } from "lucide-react";
 
 export interface HeatMapLegendProps {
   selectedFilter: string;
@@ -43,6 +43,12 @@ const hazardFilters = [
     label: "Heat Stress",
     icon: Flame,
     color: "text-red-400",
+  },
+  {
+    id: "conflict",
+    label: "Conflict",
+    icon: Swords,
+    color: "text-red-600",
   },
 ];
 
