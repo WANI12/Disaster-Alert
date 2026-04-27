@@ -8,6 +8,7 @@ import HeroSection from "../ui/HeroSection";
 import HazardCard from "../ui/HazardCard";
 import StatCard from "../ui/StatCard";
 import FilterBar from "../ui";
+import HeatMapLegend, { heatStressLevels } from "../ui/HeatMapLegend";
 import { TrendingUp, AlertCircle, MapPin, Clock } from "lucide-react";
 
 const DEFAULT_FROM = "2000-01-01";
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   const [granularity, setGranularity] = useState<string>("auto");
   const [timeField, setTimeField] = useState<"occurred_at" | "created_at">("occurred_at");
   const [selectedHazard, setSelectedHazard] = useState<string>("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("");
 
   const [timeline, setTimeline] = useState<TimelinePayload | null>(null);
   const [mapData, setMapData] = useState<GeoJSONFeatureCollection | null>(null);
@@ -268,13 +270,22 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Map Section */}
+        {/* Map Section with Heat Stress Visualization */}
         <section className="mb-16" id="map">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white">Explore Our Data</h2>
+            <p className="text-slate-400">
+              Interactive heat stress and disaster type mapping across the region
+            </p>
+          </div>
+
           <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-white">Interactive Map</h3>
-                <p className="text-sm text-slate-400">Geographical distribution of incidents across South Sudan</p>
+                <h3 className="text-lg font-semibold text-white">Regional Heat Stress Map</h3>
+                <p className="text-sm text-slate-400">
+                  Click on hazard types or regions to explore incidents
+                </p>
               </div>
               <button
                 type="button"
@@ -285,48 +296,125 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="h-[600px] w-full overflow-hidden rounded-lg border border-slate-700">
-              <MapContainer center={[7.5, 31.6]} zoom={6} style={{ height: "100%", width: "100%" }}>
-                {showSatellite ? (
-                  <TileLayer url={satelliteTileUrl} attribution={satelliteAttribution} />
-                ) : (
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; OpenStreetMap contributors'
-                  />
-                )}
+            {/* Map with Sidebar Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Left Sidebar - Filters and Legend */}
+              <div className="lg:col-span-1 flex flex-col gap-6">
+                <HeatMapLegend
+                  selectedFilter={selectedFilter}
+                  onFilterChange={setSelectedFilter}
+                />
+              </div>
 
-                {mapMarkers.map((f, idx) => {
-                  const coords = f.geometry?.coordinates as [number, number] | undefined;
-                  if (!coords) return null;
-                  const lon = coords[0];
-                  const lat = coords[1];
-                  const p = f.properties as any;
-                  const color = riskColor(p?.risk_level);
-                  const weight = Math.min(12, 3 + Number(p?.count ?? 1));
-                  return (
-                    <CircleMarker
-                      key={`m-${idx}`}
-                      center={[lat, lon]}
-                      pathOptions={{
-                        color,
-                        fillColor: color,
-                        fillOpacity: 0.25,
-                        weight: 2,
-                      }}
-                      radius={weight}
-                    >
-                      <Popup>
-                        <div className="text-sm">
-                          <div className="font-semibold">{p?.name ?? "Unknown"}</div>
-                          <div className="text-xs text-gray-600">{p?.disaster_type}</div>
-                          <div className="text-xs text-gray-600">Risk: {p?.risk_level}</div>
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                  );
-                })}
-              </MapContainer>
+              {/* Main Map Area */}
+              <div className="lg:col-span-3">
+                <div className="h-[600px] w-full overflow-hidden rounded-lg border border-slate-700">
+                  <MapContainer
+                    center={[7.5, 31.6]}
+                    zoom={6}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    {showSatellite ? (
+                      <TileLayer
+                        url={satelliteTileUrl}
+                        attribution={satelliteAttribution}
+                      />
+                    ) : (
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; OpenStreetMap contributors"
+                      />
+                    )}
+
+                    {mapMarkers.map((f, idx) => {
+                      const coords = f.geometry?.coordinates as
+                        | [number, number]
+                        | undefined;
+                      if (!coords) return null;
+                      const lon = coords[0];
+                      const lat = coords[1];
+                      const p = f.properties as any;
+                      const disasterType =
+                        p?.disaster_type?.toLowerCase() ?? "";
+
+                      // Filter based on selected filter
+                      if (selectedFilter && selectedFilter !== "all") {
+                        const filterMap: Record<string, string[]> = {
+                          "extreme-rainfall": ["flood", "rainfall"],
+                          drought: ["drought"],
+                          agriculture: ["crop", "agriculture"],
+                          "heat-stress": ["heat", "heatstress"],
+                        };
+                        const allowedTypes = filterMap[selectedFilter] || [];
+                        if (
+                          !allowedTypes.some((t) => disasterType.includes(t))
+                        ) {
+                          return null;
+                        }
+                      }
+
+                      const color = riskColor(p?.risk_level);
+                      const weight = Math.min(12, 3 + Number(p?.count ?? 1));
+                      return (
+                        <CircleMarker
+                          key={`m-${idx}`}
+                          center={[lat, lon]}
+                          pathOptions={{
+                            color,
+                            fillColor: color,
+                            fillOpacity: 0.25,
+                            weight: 2,
+                          }}
+                          radius={weight}
+                        >
+                          <Popup>
+                            <div className="text-sm">
+                              <div className="font-semibold">
+                                {p?.name ?? "Unknown"}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {p?.disaster_type}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Risk: {p?.risk_level}
+                              </div>
+                              {p?.heat_index && (
+                                <div className="text-xs text-gray-600">
+                                  Heat Index: {p.heat_index}°C
+                                </div>
+                              )}
+                            </div>
+                          </Popup>
+                        </CircleMarker>
+                      );
+                    })}
+                  </MapContainer>
+                </div>
+
+                {/* Heat Stress Legend Below Map */}
+                <div className="mt-6 p-4 rounded-lg border border-slate-700 bg-slate-800/30">
+                  <h4 className="text-sm font-semibold text-white mb-3">
+                    Heat Stress Temperature Scale
+                  </h4>
+                  <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                    {heatStressLevels.map(({ label, color, value }) => (
+                      <div
+                        key={label}
+                        className="flex flex-col items-center gap-1"
+                      >
+                        <div
+                          className="w-8 h-8 rounded border border-slate-600 cursor-pointer hover:border-slate-400 transition"
+                          style={{ backgroundColor: color }}
+                          title={label}
+                        />
+                        <span className="text-xs text-slate-400 text-center">
+                          {value}°
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
