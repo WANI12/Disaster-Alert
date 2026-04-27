@@ -19,6 +19,38 @@ export const heatStressLevels = [
   { label: "53°C", color: "#7c2d12", value: 53 },
 ];
 
+export const conflictLevels = [
+  { label: "Low", color: "#60a5fa" },
+  { label: "Moderate", color: "#f59e0b" },
+  { label: "High", color: "#f97316" },
+  { label: "Extreme", color: "#dc2626" },
+  { label: "Catastrophic", color: "#7c2d12" },
+];
+
+export const droughtLevels = [
+  { label: "No Drought", color: "#22c55e" },
+  { label: "Abnormally Dry", color: "#eab308" },
+  { label: "Moderate Drought", color: "#f59e0b" },
+  { label: "Severe Drought", color: "#f97316" },
+  { label: "Extreme Drought", color: "#dc2626" },
+];
+
+export const rainfallLevels = [
+  { label: "Light", color: "#60a5fa" },
+  { label: "Moderate", color: "#06b6d4" },
+  { label: "Heavy", color: "#3b82f6" },
+  { label: "Very Heavy", color: "#1e40af" },
+  { label: "Extreme", color: "#0c2340" },
+];
+
+export const agricultureLevels = [
+  { label: "Excellent", color: "#22c55e" },
+  { label: "Good", color: "#84cc16" },
+  { label: "Fair", color: "#eab308" },
+  { label: "Poor", color: "#f97316" },
+  { label: "Critical", color: "#dc2626" },
+];
+
 const hazardFilters = [
   {
     id: "extreme-rainfall",
@@ -56,6 +88,25 @@ export default function HeatMapLegend({
   selectedFilter,
   onFilterChange,
 }: HeatMapLegendProps) {
+  const getScaleForFilter = () => {
+    switch (selectedFilter) {
+      case "conflict":
+        return { title: "Conflict Risk Scale", levels: conflictLevels };
+      case "drought":
+        return { title: "Drought Severity Scale", levels: droughtLevels };
+      case "extreme-rainfall":
+        return { title: "Rainfall Intensity Scale", levels: rainfallLevels };
+      case "agriculture":
+        return { title: "Agricultural Impact Scale", levels: agricultureLevels };
+      case "heat-stress":
+        return { title: "Heat Stress Temperature Scale", levels: heatStressLevels };
+      default:
+        return { title: "Heat Stress Temperature Scale", levels: heatStressLevels };
+    }
+  };
+
+  const currentScale = getScaleForFilter();
+
   return (
     <div className="flex flex-col gap-8">
       {/* Filters */}
@@ -79,10 +130,10 @@ export default function HeatMapLegend({
       {/* Legend */}
       <div className="flex flex-col gap-3">
         <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
-          Heat Stress Scale
+          {currentScale.title}
         </h4>
         <div className="flex flex-col gap-2">
-          {heatStressLevels.map(({ label, color }) => (
+          {currentScale.levels.map(({ label, color }) => (
             <div key={label} className="flex items-center gap-2">
               <div
                 className="w-6 h-6 rounded border border-slate-600"

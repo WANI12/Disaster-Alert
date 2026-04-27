@@ -8,7 +8,7 @@ import HeroSection from "../ui/HeroSection";
 import HazardCard from "../ui/HazardCard";
 import StatCard from "../ui/StatCard";
 import FilterBar from "../ui";
-import HeatMapLegend, { heatStressLevels } from "../ui/HeatMapLegend";
+import HeatMapLegend, { heatStressLevels, conflictLevels, droughtLevels, rainfallLevels, agricultureLevels } from "../ui/HeatMapLegend";
 import { TrendingUp, AlertCircle, MapPin, Clock } from "lucide-react";
 
 const DEFAULT_FROM = "2000-01-01";
@@ -400,24 +400,37 @@ export default function DashboardPage() {
                 {/* Heat Stress Legend Below Map */}
                 <div className="mt-6 p-4 rounded-lg border border-slate-700 bg-slate-800/30">
                   <h4 className="text-sm font-semibold text-white mb-3">
-                    Heat Stress Temperature Scale
+                    {selectedFilter === "conflict" && "Conflict Risk Scale"}
+                    {selectedFilter === "drought" && "Drought Severity Scale"}
+                    {selectedFilter === "extreme-rainfall" && "Rainfall Intensity Scale"}
+                    {selectedFilter === "agriculture" && "Agricultural Impact Scale"}
+                    {selectedFilter === "heat-stress" && "Heat Stress Temperature Scale"}
+                    {!selectedFilter && "Heat Stress Temperature Scale"}
                   </h4>
                   <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-                    {heatStressLevels.map(({ label, color, value }) => (
-                      <div
-                        key={label}
-                        className="flex flex-col items-center gap-1"
-                      >
-                        <div
-                          className="w-8 h-8 rounded border border-slate-600 cursor-pointer hover:border-slate-400 transition"
-                          style={{ backgroundColor: color }}
-                          title={label}
-                        />
-                        <span className="text-xs text-slate-400 text-center">
-                          {value}°
-                        </span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const scaleMap: Record<string, Array<{ label: string; color: string; value?: number }>> = {
+                        conflict: conflictLevels,
+                        drought: droughtLevels,
+                        "extreme-rainfall": rainfallLevels,
+                        agriculture: agricultureLevels,
+                        "heat-stress": heatStressLevels,
+                        default: heatStressLevels,
+                      };
+                      const currentScale = scaleMap[selectedFilter] || scaleMap.default;
+                      return currentScale.map(({ label, color }) => (
+                        <div key={label} className="flex flex-col items-center gap-1">
+                          <div
+                            className="w-8 h-8 rounded border border-slate-600 cursor-pointer hover:border-slate-400 transition"
+                            style={{ backgroundColor: color }}
+                            title={label}
+                          />
+                          <span className="text-xs text-slate-400 text-center">
+                            {label.split(" ")[0]}
+                          </span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>
