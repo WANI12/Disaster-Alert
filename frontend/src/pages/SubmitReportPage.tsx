@@ -8,6 +8,22 @@ type Location = {
   county: string;
 };
 
+const SOUTH_SUDAN_STATES = [
+  "Abyei",
+  "Central Equatoria",
+  "Eastern Equatoria",
+  "Jonglei",
+  "Lakes",
+  "Northern Bahr el Ghazal",
+  "Pibor",
+  "Ruweng",
+  "Unity",
+  "Upper Nile",
+  "Warrap",
+  "Western Bahr el Ghazal",
+  "Western Equatoria",
+];
+
 export default function SubmitReportPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [stateFilter, setStateFilter] = useState("");
@@ -124,13 +140,19 @@ export default function SubmitReportPage() {
 
           <div className="grid gap-3 md:grid-cols-2">
             <label className="block">
-              <div className="mb-1 text-sm text-slate-300">State filter</div>
-              <input
+              <div className="mb-1 text-sm text-slate-300">State / Location</div>
+              <select
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-100"
                 value={stateFilter}
                 onChange={(e) => setStateFilter(e.target.value)}
-                placeholder="Leave blank for all"
-              />
+              >
+                <option value="">Select a state...</option>
+                {SOUTH_SUDAN_STATES.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="block">
               <div className="mb-1 text-sm text-slate-300">Location</div>
