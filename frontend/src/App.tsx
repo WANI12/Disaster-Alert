@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, NavLink, Route, Routes } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage.tsx";
+import DataAnalysisPage from "./pages/DataAnalysisPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import SubmitAlertPage from "./pages/SubmitAlertPage.tsx";
@@ -28,6 +29,9 @@ export default function App() {
             <NavLink to="/" className={linkClass}>
               Dashboard
             </NavLink>
+            <NavLink to="/data-analysis" className={linkClass}>
+              Data Analysis
+            </NavLink>
             <NavLink to="/submit-alert" className={linkClass}>
               Report Incident
             </NavLink>
@@ -47,6 +51,7 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/data-analysis" element={<DataAnalysisPage />} />
           <Route path="/submit-alert" element={<SubmitAlertPage />} />
           <Route path="/submit-report" element={<SubmitReportPage />} />
           <Route path="/register" element={<RegisterPage />} />
